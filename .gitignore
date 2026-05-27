@@ -1,0 +1,9 @@
+# Arquivos temporários
+server.ps1
+testimonial_*.png
+.claude/
+
+# Sistema
+Thumbs.db
+.DS_Store
+desktop.ini

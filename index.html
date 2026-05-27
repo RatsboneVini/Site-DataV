@@ -1,0 +1,2268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="DataV Tecnologia — Une Finanças e Tecnologia para Análises Inteligentes. Dashboards Power BI, IA, automações e governança de dados com Vinicius Ratsbone." />
+  <meta name="theme-color" content="#002D2B" />
+  <title>DataV Tecnologia | Une Finanças e Tecnologia para Análises Inteligentes</title>
+
+  <!-- Google Fonts: Montserrat Alternates (fonte oficial da marca) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Favicon SVG (ícone DataV simplificado: barras crescentes) -->
+  <link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="10" y="40" width="8" height="14" fill="%2300D0C6"/><rect x="22" y="30" width="8" height="24" fill="%2300D0C6"/><rect x="34" y="20" width="8" height="34" fill="%2300D0C6"/><rect x="46" y="10" width="8" height="44" fill="%2300D0C6"/></svg>'>
+
+  <style>
+    /* =====================================================================
+       DESIGN TOKENS — extraídos diretamente do Manual da Marca DataV
+       ===================================================================== */
+    :root {
+      --verde-adorsia: #002D2B;   /* primária */
+      --verde-cerceta: #063A36;   /* primária */
+      --azul-ciano:    #00D0C6;   /* accent / destaque */
+      --cinza:         #BEBEBE;
+      --cinza-claro:   #E6E7E7;
+      --branco:        #FFFFFF;
+
+      /* gradientes e overlays derivados da paleta */
+      --grad-hero: radial-gradient(ellipse at top right, #063A36 0%, #002D2B 60%);
+      --grad-card: linear-gradient(160deg, rgba(6,58,54,0.85), rgba(0,45,43,0.95));
+      --shadow-soft: 0 10px 40px -10px rgba(0, 208, 198, 0.18);
+      --shadow-hard: 0 20px 60px -15px rgba(0, 0, 0, 0.4);
+
+      /* tipografia */
+      --font: 'Montserrat Alternates', system-ui, -apple-system, sans-serif;
+
+      /* layout */
+      --maxw: 1200px;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 24px;
+      --transition: 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    /* =====================================================================
+       RESET e base
+       ===================================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+    body {
+      font-family: var(--font);
+      font-weight: 400;
+      color: var(--verde-adorsia);
+      background: var(--branco);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    img { max-width: 100%; display: block; }
+
+    a { color: inherit; text-decoration: none; }
+
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* container utilitário */
+    .container { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 1.25rem; }
+
+    section { padding: 5rem 0; position: relative; overflow: hidden; }
+
+    h1, h2, h3, h4 { font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; }
+    h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 1rem; }
+    h3 { font-size: 1.25rem; }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .section-title h2 { color: var(--verde-adorsia); }
+    .section-title .eyebrow {
+      display: inline-block;
+      color: var(--azul-ciano);
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .section-title p { color: #4a5a58; max-width: 640px; margin: 0.75rem auto 0; }
+
+    /* =====================================================================
+       HEXÁGONOS decorativos — elemento visual recorrente da marca
+       ===================================================================== */
+    .hex-bg {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.08;
+      z-index: 0;
+    }
+    .hex-bg svg { width: 100%; height: 100%; }
+
+    @keyframes floatHex {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50%      { transform: translateY(-15px) rotate(8deg); }
+    }
+    .hex-float { animation: floatHex 8s ease-in-out infinite; }
+    .hex-float.delay-1 { animation-delay: 1.5s; }
+    .hex-float.delay-2 { animation-delay: 3s; }
+
+    /* =====================================================================
+       NAVBAR — fixa, scroll spy, hamburger no mobile
+       ===================================================================== */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: rgba(0, 45, 43, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: background var(--transition), box-shadow var(--transition);
+      border-bottom: 1px solid rgba(0, 208, 198, 0.08);
+    }
+    .navbar.scrolled {
+      background: rgba(0, 45, 43, 0.97);
+      box-shadow: 0 8px 30px -10px rgba(0,0,0,0.4);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 72px;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 0.6rem;
+      color: var(--branco); font-weight: 700; font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+    .brand .v-accent { color: var(--azul-ciano); }
+    .brand-icon { width: 32px; height: 32px; flex: 0 0 32px; }
+
+    .nav-links { display: flex; gap: 0.25rem; list-style: none; }
+    .nav-links a {
+      position: relative;
+      display: inline-block;
+      color: rgba(255,255,255,0.75);
+      padding: 0.55rem 0.95rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.92rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color var(--transition), background var(--transition), transform 0.12s ease;
+    }
+    /* underline animado — feedback visual de link clicável */
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 2px;
+      width: 0;
+      height: 2px;
+      background: var(--azul-ciano);
+      border-radius: 2px;
+      transform: translateX(-50%);
+      transition: width var(--transition);
+    }
+    .nav-links a:hover {
+      color: var(--branco);
+      background: rgba(255,255,255,0.04);
+    }
+    .nav-links a:hover::after { width: calc(100% - 1.5rem); }
+    .nav-links a:active { transform: scale(0.95); }
+    .nav-links a.active {
+      color: var(--azul-ciano);
+      background: rgba(0, 208, 198, 0.10);
+    }
+    .nav-links a.active::after { width: calc(100% - 1.5rem); }
+
+    .nav-cta {
+      background: var(--azul-ciano);
+      color: var(--verde-adorsia);
+      padding: 0.6rem 1.1rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -8px rgba(0,208,198,0.5); }
+
+    .hamburger {
+      display: none;
+      width: 32px; height: 32px;
+      flex-direction: column; justify-content: center; gap: 6px;
+    }
+    .hamburger span {
+      display: block; width: 22px; height: 2px;
+      background: var(--branco);
+      transition: transform var(--transition), opacity var(--transition);
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+    /* =====================================================================
+       HERO — fundo escuro, hexágonos animados, CTA principal
+       ===================================================================== */
+    .hero {
+      min-height: 100vh;
+      background: var(--grad-hero);
+      color: var(--branco);
+      display: flex; align-items: center;
+      padding: 8rem 0 5rem;
+    }
+    .hero-inner { position: relative; z-index: 2; text-align: center; }
+    .hero .pretitle {
+      display: inline-block;
+      color: var(--azul-ciano);
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+      padding: 0.4rem 1rem;
+      border: 1px solid rgba(0, 208, 198, 0.3);
+      border-radius: 999px;
+    }
+    .hero h1 {
+      font-size: clamp(2.1rem, 5.5vw, 4rem);
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.03em;
+    }
+    .hero h1 .accent { color: var(--azul-ciano); }
+    .hero .subtitle {
+      font-size: clamp(1rem, 1.6vw, 1.2rem);
+      color: rgba(255,255,255,0.8);
+      max-width: 680px; margin: 0 auto 0.5rem;
+    }
+    .hero .author {
+      font-size: 0.95rem;
+      color: var(--cinza);
+      margin-bottom: 2.5rem;
+      letter-spacing: 0.05em;
+    }
+    .hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      padding: 0.95rem 1.7rem;
+      border-radius: 999px;
+      font-weight: 700; font-size: 0.95rem;
+      transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--azul-ciano);
+      color: var(--verde-adorsia);
+      box-shadow: 0 14px 40px -10px rgba(0, 208, 198, 0.45);
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 20px 50px -10px rgba(0,208,198,0.6); }
+    .btn-outline {
+      background: transparent;
+      color: var(--branco);
+      border: 1.5px solid rgba(255,255,255,0.25);
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.06); border-color: var(--azul-ciano); }
+
+    .hero-hex-1 { top: 8%; left: -5%; width: 380px; height: 380px; opacity: 0.10; }
+    .hero-hex-2 { bottom: 5%; right: -8%; width: 460px; height: 460px; opacity: 0.07; }
+    .hero-hex-3 { top: 40%; right: 12%; width: 90px; height: 90px; opacity: 0.20; }
+    .hero-hex-4 { bottom: 18%; left: 8%; width: 70px; height: 70px; opacity: 0.22; }
+
+    /* scroll indicator */
+    .scroll-indicator {
+      position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 0.2em;
+      text-transform: uppercase; animation: bounce 2.5s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translate(-50%, 0); }
+      50%      { transform: translate(-50%, 8px); }
+    }
+
+    /* =====================================================================
+       SOBRE / CREDENCIAIS — bio + cards de métricas + linha do tempo
+       ===================================================================== */
+    .about { background: var(--branco); }
+    .about-grid {
+      display: grid; grid-template-columns: 1.1fr 1fr;
+      gap: 3rem; align-items: center;
+    }
+    .about-text h2 { color: var(--verde-adorsia); margin-bottom: 1.25rem; }
+    .about-text p { color: #4a5a58; margin-bottom: 1rem; font-size: 1rem; }
+    .about-text .lead { font-size: 1.05rem; color: var(--verde-cerceta); font-weight: 500; }
+
+    .credentials {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.9rem;
+    }
+    .cred-card {
+      background: var(--cinza-claro);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      transition: transform var(--transition), box-shadow var(--transition);
+      border: 1px solid transparent;
+    }
+    .cred-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--azul-ciano);
+      box-shadow: var(--shadow-soft);
+    }
+    .cred-card .cred-icon {
+      font-size: 1.6rem; margin-bottom: 0.4rem; display: block;
+    }
+    .cred-card .cred-value {
+      font-size: 1.2rem; font-weight: 700; color: var(--verde-adorsia);
+      line-height: 1.2;
+    }
+    .cred-card .cred-label {
+      font-size: 0.82rem; color: #5a6a68; margin-top: 0.25rem;
+    }
+
+    /* =====================================================================
+       MAPA DO BRASIL — estados atendidos
+       ===================================================================== */
+    .map-card { padding: 1.75rem !important; }
+    .map-card:hover { transform: none !important; border-color: transparent !important; box-shadow: none !important; }
+    .map-wrap {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1.75rem;
+      align-items: center;
+    }
+    .map-svg-wrap {
+      width: 100%;
+      max-width: 380px;
+      margin: 0 auto;
+      position: relative;
+    }
+    /* SVG do mapa carregado dinamicamente */
+    #map-container { width: 100%; min-height: 180px; position: relative; display: flex; justify-content: center; }
+    #map-container svg {
+      width: 100%; height: auto; max-width: 100%;
+      stroke: var(--branco); stroke-width: 1.5;
+      stroke-linejoin: round; stroke-linecap: round;
+    }
+    /* todos os estados (UFs) — cinza intermediário por padrão (visível sobre fundo claro) */
+    #map-container svg path {
+      fill: #c2cac9;
+      transition: all 0.3s ease;
+      cursor: default;
+    }
+    #map-container svg path:hover { fill: #a8b3b2; }
+    /* 8 estados clientes — pintados inteiramente em azul ciano */
+    #map-container svg path#CE, #map-container svg path#BA,
+    #map-container svg path#MG, #map-container svg path#MS,
+    #map-container svg path#RJ, #map-container svg path#SP,
+    #map-container svg path#PR, #map-container svg path#RS {
+      fill: var(--azul-ciano);
+      cursor: pointer;
+    }
+    #map-container svg path#CE:hover, #map-container svg path#BA:hover,
+    #map-container svg path#MG:hover, #map-container svg path#MS:hover,
+    #map-container svg path#RJ:hover, #map-container svg path#SP:hover,
+    #map-container svg path#PR:hover, #map-container svg path#RS:hover {
+      fill: var(--verde-cerceta);
+      filter: drop-shadow(0 4px 8px rgba(6, 58, 54, 0.35));
+    }
+    /* tooltip flutuante do mapa */
+    .map-tooltip {
+      position: absolute;
+      background: var(--verde-adorsia);
+      color: var(--branco);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem; font-weight: 600;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 10; white-space: nowrap;
+    }
+    /* loader enquanto carrega */
+    .map-loading {
+      color: var(--cinza); font-size: 0.85rem; font-weight: 500;
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.5rem; padding: 2rem 0;
+    }
+    .map-loading::before {
+      content: ''; width: 18px; height: 18px;
+      border: 2px solid var(--cinza-claro);
+      border-top-color: var(--azul-ciano);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .map-legend .map-count {
+      font-size: 2rem; font-weight: 800;
+      color: var(--verde-adorsia); line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .map-legend .map-count .accent { color: var(--azul-ciano); }
+    .map-legend .map-sub {
+      font-size: 0.85rem; color: #5a6a68;
+      margin-bottom: 1.1rem;
+    }
+    .state-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .state-list li {
+      display: flex; align-items: center; gap: 0.45rem;
+      font-size: 0.82rem;
+      color: var(--verde-cerceta);
+      font-weight: 500;
+    }
+    .state-list li::before {
+      content: '';
+      width: 8px; height: 8px; flex: 0 0 8px;
+      background: var(--azul-ciano);
+      border-radius: 50%;
+    }
+    @media (max-width: 700px) {
+      .map-wrap { grid-template-columns: 1fr; gap: 1.25rem; }
+      .map-svg-wrap { max-width: 280px; }
+      .state-list { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* linha do tempo */
+    .timeline-wrap { margin-top: 4rem; }
+    .timeline-title {
+      text-align: center;
+      font-size: 0.85rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--azul-ciano); font-weight: 600; margin-bottom: 2.5rem;
+    }
+    .timeline {
+      position: relative;
+      display: flex; justify-content: space-between;
+      padding: 2rem 0; overflow-x: auto;
+      scrollbar-width: thin;
+    }
+    .tl-item {
+      position: relative; flex: 0 0 auto;
+      text-align: center;
+      padding: 0 1rem;
+      min-width: 110px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .tl-year { font-weight: 700; color: var(--verde-adorsia); font-size: 0.95rem; margin-bottom: 0.6rem; }
+    .tl-dot-wrap {
+      position: relative;
+      width: 100%; display: flex; justify-content: center; align-items: center;
+      height: 16px; margin-bottom: 0.6rem;
+    }
+    /* linha horizontal cruza os dots (não os anos) */
+    .tl-dot-wrap::before {
+      content: '';
+      position: absolute; left: -50%; right: -50%;
+      height: 2px;
+      background: var(--azul-ciano);
+      z-index: 1;
+    }
+    .tl-item:first-child .tl-dot-wrap::before { left: 50%; }
+    .tl-item:last-child .tl-dot-wrap::before { right: 50%; }
+    .tl-dot {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--branco); border: 3px solid var(--azul-ciano);
+      position: relative; z-index: 2;
+      transition: transform var(--transition), background var(--transition);
+    }
+    .tl-item:hover .tl-dot { transform: scale(1.3); background: var(--azul-ciano); }
+    .tl-area { font-size: 0.78rem; color: #5a6a68; }
+
+    /* =====================================================================
+       SERVIÇOS — grid de cards
+       ===================================================================== */
+    .services { background: var(--cinza-claro); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .service-card {
+      background: var(--branco);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      transition: transform var(--transition), box-shadow var(--transition);
+      border: 1px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute; top: 0; right: 0;
+      width: 120px; height: 120px;
+      background: var(--azul-ciano);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      opacity: 0.06;
+      transform: translate(40px, -40px);
+      transition: transform var(--transition), opacity var(--transition);
+    }
+    .service-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 25px 60px -20px rgba(6, 58, 54, 0.25);
+      border-color: rgba(0, 208, 198, 0.3);
+    }
+    .service-card:hover::before { transform: translate(30px, -30px) scale(1.2); opacity: 0.12; }
+    .service-icon {
+      width: 56px; height: 56px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--verde-adorsia), var(--verde-cerceta));
+      border-radius: 14px;
+      margin-bottom: 1.25rem;
+      color: var(--azul-ciano);
+      font-size: 1.5rem;
+    }
+    .service-icon svg { width: 28px; height: 28px; }
+    .service-card h3 { color: var(--verde-adorsia); margin-bottom: 0.6rem; }
+    .service-card .badge-new {
+      display: inline-block;
+      background: var(--azul-ciano); color: var(--verde-adorsia);
+      font-size: 0.65rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px;
+      margin-left: 0.5rem; vertical-align: middle;
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .service-card p { color: #4a5a58; font-size: 0.92rem; margin-bottom: 1.25rem; }
+    .service-card .service-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      color: var(--verde-cerceta); font-weight: 600; font-size: 0.88rem;
+      padding: 0.5rem 0;
+      border-bottom: 2px solid transparent;
+      transition: color var(--transition), border-color var(--transition), gap var(--transition);
+    }
+    .service-card .service-btn:hover {
+      color: var(--azul-ciano);
+      border-color: var(--azul-ciano);
+      gap: 0.7rem;
+    }
+
+    /* =====================================================================
+       COMO FUNCIONA — processo em 4 passos
+       ===================================================================== */
+    .process { background: var(--branco); }
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      position: relative;
+    }
+    .step-card {
+      position: relative;
+      padding: 2rem 1.5rem;
+      background: var(--cinza-claro);
+      border-radius: var(--radius-lg);
+      text-align: center;
+      transition: transform var(--transition), background var(--transition);
+    }
+    .step-card:hover {
+      background: var(--verde-adorsia);
+      color: var(--branco);
+      transform: translateY(-6px);
+    }
+    .step-card:hover h3,
+    .step-card:hover .step-num { color: var(--azul-ciano); }
+    .step-card:hover p { color: rgba(255,255,255,0.85); }
+    .step-num {
+      font-size: 2.5rem; font-weight: 800; color: var(--azul-ciano);
+      line-height: 1; margin-bottom: 0.8rem;
+      transition: color var(--transition);
+    }
+    .step-card h3 { color: var(--verde-adorsia); margin-bottom: 0.5rem; transition: color var(--transition); }
+    .step-card p { font-size: 0.9rem; color: #4a5a58; transition: color var(--transition); }
+
+    /* =====================================================================
+       PORTFÓLIO — filtros, grid e modal upload
+       ===================================================================== */
+    .portfolio { background: var(--cinza-claro); }
+    .portfolio-controls {
+      display: flex; flex-wrap: wrap;
+      justify-content: space-between; align-items: center;
+      gap: 1rem; margin-bottom: 2rem;
+    }
+    .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .filter-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      background: var(--branco);
+      color: var(--verde-cerceta);
+      font-size: 0.85rem; font-weight: 600;
+      border: 1px solid transparent;
+      transition: all var(--transition);
+    }
+    .filter-btn.active,
+    .filter-btn:hover {
+      background: var(--verde-adorsia);
+      color: var(--azul-ciano);
+    }
+    .add-project-btn {
+      display: none; /* oculto por padrão — visível apenas em modo admin (?admin=1) */
+      align-items: center; gap: 0.5rem;
+      padding: 0.65rem 1.2rem;
+      background: var(--azul-ciano); color: var(--verde-adorsia);
+      border-radius: 999px; font-weight: 700; font-size: 0.88rem;
+      transition: transform var(--transition);
+    }
+    body.admin-mode .add-project-btn { display: inline-flex; }
+    .add-project-btn:hover { transform: translateY(-2px); }
+    /* esconde botão de excluir projeto para visitantes */
+    .project-delete { display: none; }
+    body.admin-mode .project-card[data-user="true"] .project-delete { display: flex; }
+
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .project-card {
+      background: var(--branco);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: transform var(--transition), box-shadow var(--transition);
+      display: flex; flex-direction: column;
+    }
+    .project-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 25px 50px -20px rgba(0,0,0,0.2);
+    }
+    .project-thumb {
+      width: 100%; aspect-ratio: 16/10;
+      background: linear-gradient(135deg, var(--verde-cerceta), var(--verde-adorsia));
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .project-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .project-thumb .placeholder-icon {
+      color: var(--azul-ciano); opacity: 0.6; font-size: 3rem;
+    }
+    .project-tag {
+      position: absolute; top: 12px; left: 12px;
+      background: var(--azul-ciano); color: var(--verde-adorsia);
+      font-size: 0.7rem; font-weight: 700;
+      padding: 4px 10px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .project-body {
+      padding: 1.25rem 1.5rem 1.5rem;
+      flex: 1; display: flex; flex-direction: column;
+    }
+    .project-body h3 { color: var(--verde-adorsia); margin-bottom: 0.5rem; font-size: 1.1rem; }
+    .project-body p {
+      color: #5a6a68; font-size: 0.88rem; margin-bottom: 1rem;
+      flex: 1;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .project-actions { display: flex; gap: 0.5rem; }
+    .project-link {
+      flex: 1; text-align: center;
+      padding: 0.6rem 1rem;
+      background: var(--verde-adorsia); color: var(--branco);
+      border-radius: 999px; font-size: 0.82rem; font-weight: 600;
+      transition: background var(--transition);
+    }
+    .project-link:hover { background: var(--verde-cerceta); }
+    .project-delete {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--cinza-claro); color: #c44;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background var(--transition);
+    }
+    .project-delete:hover { background: #fdd; }
+    /* delete controlado via body.admin-mode no CSS acima */
+
+    /* MODAL */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0, 45, 43, 0.7);
+      backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 2000; padding: 1rem;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--branco);
+      border-radius: var(--radius-lg);
+      width: 100%; max-width: 540px;
+      max-height: 92vh; overflow-y: auto;
+      padding: 2rem;
+      animation: modalIn 0.35s var(--transition);
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to   { opacity: 1; transform: none; }
+    }
+    .modal h3 { color: var(--verde-adorsia); margin-bottom: 1.25rem; font-size: 1.4rem; }
+    .modal-close {
+      float: right; font-size: 1.4rem; color: #5a6a68;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; transition: background var(--transition);
+    }
+    .modal-close:hover { background: var(--cinza-claro); }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block; font-size: 0.82rem; font-weight: 600;
+      color: var(--verde-cerceta); margin-bottom: 0.4rem;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1.5px solid var(--cinza-claro);
+      border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 0.92rem;
+      background: var(--branco); color: var(--verde-adorsia);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--azul-ciano);
+      box-shadow: 0 0 0 4px rgba(0, 208, 198, 0.12);
+    }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+    .form-group .file-preview {
+      margin-top: 0.6rem;
+      max-height: 140px; border-radius: var(--radius-sm); overflow: hidden;
+      display: none;
+    }
+    .form-group .file-preview.show { display: block; }
+    .form-group .file-preview img { width: 100%; height: 140px; object-fit: cover; }
+
+    .form-actions {
+      display: flex; gap: 0.6rem; justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+    .btn-secondary {
+      background: var(--cinza-claro);
+      color: var(--verde-cerceta);
+      padding: 0.75rem 1.4rem;
+      border-radius: 999px; font-weight: 600; font-size: 0.9rem;
+    }
+    .btn-secondary:hover { background: var(--cinza); }
+
+    /* =====================================================================
+       TELA DE LOGIN ADMIN
+       ===================================================================== */
+    .login-overlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, var(--verde-adorsia) 0%, var(--verde-cerceta) 100%);
+      display: none; align-items: center; justify-content: center;
+      z-index: 9999; padding: 1rem;
+    }
+    .login-overlay.open { display: flex; }
+    .login-card {
+      background: var(--branco);
+      border-radius: var(--radius-lg);
+      width: 100%; max-width: 400px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+      animation: modalIn 0.4s ease;
+    }
+    .login-card .brand {
+      justify-content: center; margin-bottom: 1.5rem; font-size: 1.8rem;
+    }
+    .login-card h3 {
+      color: var(--verde-adorsia); font-size: 1.2rem; margin-bottom: 0.3rem;
+    }
+    .login-card .login-sub {
+      color: #5a6a68; font-size: 0.88rem; margin-bottom: 1.5rem;
+    }
+    .login-card .form-group { text-align: left; }
+    .login-card .form-group input[type="password"] {
+      width: 100%; padding: 0.8rem 1rem;
+      border: 1.5px solid var(--cinza-claro);
+      border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 1rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .login-card .form-group input[type="password"]:focus {
+      outline: none;
+      border-color: var(--azul-ciano);
+      box-shadow: 0 0 0 4px rgba(0, 208, 198, 0.15);
+    }
+    .login-error {
+      color: #c44; font-size: 0.82rem;
+      margin-top: 0.5rem; display: none;
+    }
+    .login-error.show { display: block; }
+    .login-btn {
+      width: 100%; margin-top: 1.2rem;
+      padding: 0.85rem;
+      background: var(--azul-ciano); color: var(--verde-adorsia);
+      border: none; border-radius: 999px;
+      font-family: inherit; font-weight: 700; font-size: 1rem;
+      cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 208, 198, 0.3);
+    }
+    .login-back {
+      display: inline-block; margin-top: 1rem;
+      color: #5a6a68; font-size: 0.85rem;
+      transition: color var(--transition);
+    }
+    .login-back:hover { color: var(--verde-adorsia); }
+
+    /* =====================================================================
+       DEPOIMENTOS
+       ===================================================================== */
+    .testimonials { background: var(--branco); }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.5rem;
+    }
+    .test-card {
+      background: var(--cinza-claro);
+      border-radius: var(--radius-lg);
+      padding: 1.8rem;
+      position: relative;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .test-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px -15px rgba(6,58,54,0.2);
+    }
+    .test-card::before {
+      content: '"';
+      position: absolute; top: 0.5rem; right: 1.2rem;
+      font-size: 4rem; line-height: 1; color: var(--azul-ciano);
+      opacity: 0.3; font-family: Georgia, serif;
+    }
+    .stars { color: #f5b50a; margin-bottom: 0.8rem; font-size: 0.95rem; letter-spacing: 2px; }
+    .test-text {
+      color: #3a4a48; font-size: 0.93rem; font-style: italic;
+      margin-bottom: 1.2rem; line-height: 1.65;
+    }
+    .test-author {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    .test-avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--verde-cerceta), var(--azul-ciano));
+      color: var(--branco);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1rem;
+    }
+    .test-author .name { font-weight: 700; color: var(--verde-adorsia); font-size: 0.92rem; }
+    .test-author .role { font-size: 0.78rem; color: #5a6a68; }
+
+    /* =====================================================================
+       VALORES
+       ===================================================================== */
+    .values {
+      background: var(--verde-adorsia);
+      color: var(--branco);
+      position: relative;
+    }
+    .values .section-title h2 { color: var(--branco); }
+    .values .section-title .eyebrow { color: var(--azul-ciano); }
+    .values .section-title p { color: rgba(255,255,255,0.7); }
+    .values-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      position: relative; z-index: 2;
+    }
+    .value-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(0, 208, 198, 0.12);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem 1.5rem;
+      text-align: center;
+      transition: transform var(--transition), background var(--transition), border-color var(--transition);
+    }
+    .value-card:hover {
+      transform: translateY(-6px);
+      background: rgba(0, 208, 198, 0.08);
+      border-color: var(--azul-ciano);
+    }
+    .value-hex {
+      width: 56px; height: 56px;
+      margin: 0 auto 1rem;
+      color: var(--azul-ciano);
+    }
+    .value-card h3 { color: var(--branco); margin-bottom: 0.5rem; font-size: 1.05rem; }
+    .value-card p { font-size: 0.85rem; color: rgba(255,255,255,0.7); }
+
+    .values-hex-bg-1 { top: 10%; left: -8%; width: 350px; height: 350px; opacity: 0.06; }
+    .values-hex-bg-2 { bottom: 5%; right: -5%; width: 280px; height: 280px; opacity: 0.05; }
+
+    /* =====================================================================
+       CONTATO / CTA FINAL
+       ===================================================================== */
+    .contact {
+      background: var(--verde-adorsia);
+      color: var(--branco);
+      position: relative;
+      padding: 6rem 0;
+    }
+    .contact-hex-1 { top: 8%; right: 5%; width: 200px; height: 200px; opacity: 0.08; }
+    .contact-hex-2 { bottom: 10%; left: 8%; width: 130px; height: 130px; opacity: 0.10; }
+
+    .contact-inner {
+      max-width: 760px; margin: 0 auto;
+      text-align: center; position: relative; z-index: 2;
+    }
+    .contact h2 {
+      font-size: clamp(1.9rem, 4.5vw, 2.9rem);
+      margin-bottom: 1rem;
+    }
+    .contact h2 .accent { color: var(--azul-ciano); }
+    .contact p.lead {
+      color: rgba(255,255,255,0.8);
+      font-size: 1.05rem; margin-bottom: 2.5rem;
+    }
+    .whats-big {
+      display: inline-flex; align-items: center; gap: 0.7rem;
+      padding: 1.1rem 2rem;
+      background: #25D366; color: var(--branco);
+      border-radius: 999px; font-weight: 700; font-size: 1.05rem;
+      box-shadow: 0 15px 40px -10px rgba(37, 211, 102, 0.45);
+      transition: transform var(--transition), box-shadow var(--transition);
+      margin-bottom: 3rem;
+    }
+    .whats-big:hover { transform: translateY(-3px); box-shadow: 0 20px 50px -10px rgba(37,211,102,0.6); }
+    .whats-big svg { width: 24px; height: 24px; }
+
+    .contact-form {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(0, 208, 198, 0.18);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+      text-align: left;
+    }
+    .contact-form h3 {
+      color: var(--branco); text-align: center; margin-bottom: 1.5rem;
+      font-size: 1.3rem;
+    }
+    .contact-form .form-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .contact-form .form-grid .full { grid-column: 1 / -1; }
+    .contact-form label { color: rgba(255,255,255,0.7); }
+    .contact-form input,
+    .contact-form select,
+    .contact-form textarea {
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      color: var(--branco);
+    }
+    .contact-form input:focus,
+    .contact-form select:focus,
+    .contact-form textarea:focus {
+      background: rgba(255,255,255,0.08);
+      border-color: var(--azul-ciano);
+    }
+    .contact-form option { background: var(--verde-adorsia); color: var(--branco); }
+    .contact-form .btn-primary { width: 100%; justify-content: center; margin-top: 1rem; }
+
+    .form-success {
+      display: none;
+      text-align: center; padding: 2rem;
+      color: var(--azul-ciano); font-weight: 600;
+    }
+    .form-success.show { display: block; }
+
+    .social-links {
+      display: flex; justify-content: center; gap: 1rem;
+      margin-top: 2.5rem;
+    }
+    .social-links a {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      color: var(--branco);
+      transition: background var(--transition), color var(--transition), transform var(--transition);
+    }
+    .social-links a:hover {
+      background: var(--azul-ciano); color: var(--verde-adorsia); transform: translateY(-3px);
+    }
+    .social-links svg { width: 20px; height: 20px; }
+
+    /* =====================================================================
+       FOOTER
+       ===================================================================== */
+    .footer {
+      background: #001a19;
+      color: rgba(255,255,255,0.6);
+      padding: 3rem 0 1.5rem;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 2.5rem;
+      margin-bottom: 2rem;
+    }
+    .footer-brand { color: var(--branco); }
+    .footer-brand .brand { margin-bottom: 0.8rem; }
+    .footer-brand p { font-size: 0.88rem; max-width: 320px; }
+    .footer h4 {
+      color: var(--branco); font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+    .footer ul { list-style: none; }
+    .footer ul li { margin-bottom: 0.55rem; }
+    .footer ul a { font-size: 0.88rem; transition: color var(--transition); }
+    .footer ul a:hover { color: var(--azul-ciano); }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 1.5rem;
+      text-align: center;
+      font-size: 0.82rem;
+    }
+
+    /* =====================================================================
+       BOTÃO FLUTUANTE WHATSAPP
+       ===================================================================== */
+    .float-whats {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      z-index: 999;
+      width: 60px; height: 60px;
+      background: #25D366; color: var(--branco);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 30px -5px rgba(37,211,102,0.5);
+      transition: transform var(--transition);
+      animation: pulse 2.4s infinite;
+    }
+    .float-whats:hover { transform: scale(1.1); }
+    .float-whats svg { width: 30px; height: 30px; }
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(37,211,102,0.55); }
+      70%  { box-shadow: 0 0 0 16px rgba(37,211,102,0); }
+      100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); }
+    }
+
+    /* =====================================================================
+       ANIMAÇÕES DE ENTRADA (Intersection Observer)
+       ===================================================================== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s var(--transition), transform 0.8s var(--transition);
+    }
+    .reveal.in-view { opacity: 1; transform: none; }
+    .reveal.delay-1 { transition-delay: 0.1s; }
+    .reveal.delay-2 { transition-delay: 0.2s; }
+    .reveal.delay-3 { transition-delay: 0.3s; }
+    .reveal.delay-4 { transition-delay: 0.4s; }
+
+    /* =====================================================================
+       RESPONSIVO
+       ===================================================================== */
+    @media (max-width: 900px) {
+      .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    }
+    @media (max-width: 768px) {
+      .nav-links {
+        position: fixed; top: 72px; left: 0; right: 0;
+        flex-direction: column;
+        background: var(--verde-adorsia);
+        padding: 1rem;
+        gap: 0;
+        transform: translateX(100%);
+        transition: transform var(--transition);
+        height: calc(100vh - 72px);
+        border-top: 1px solid rgba(0,208,198,0.1);
+        overflow-y: auto;
+      }
+      .nav-links.open { transform: translateX(0); }
+      .nav-links li { width: 100%; }
+      /* no mobile, links viram linhas inteiras com seta — afirmando o caráter de navegação */
+      .nav-links a {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 1.1rem 1rem; font-size: 1.05rem;
+        font-weight: 600;
+        border-radius: 0;
+        border-bottom: 1px solid rgba(0,208,198,0.08);
+        color: rgba(255,255,255,0.9);
+      }
+      .nav-links a::after { display: none; }
+      .nav-links a::before {
+        content: '→';
+        position: absolute;
+        right: 1.2rem;
+        color: var(--azul-ciano);
+        opacity: 0.5;
+        font-size: 1.1rem;
+        transition: transform var(--transition), opacity var(--transition);
+      }
+      .nav-links a:hover::before,
+      .nav-links a.active::before {
+        opacity: 1;
+        transform: translateX(4px);
+      }
+      .nav-links a.active {
+        background: rgba(0, 208, 198, 0.08);
+        border-left: 3px solid var(--azul-ciano);
+        padding-left: calc(1rem - 3px);
+      }
+      .nav-cta { display: none; }
+      .hamburger { display: flex; }
+      /* trava scroll do body com menu aberto */
+      body.nav-open { overflow: hidden; }
+      section { padding: 4rem 0; }
+      .contact-form .form-grid { grid-template-columns: 1fr; }
+      .contact-form { padding: 1.5rem; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .portfolio-controls { flex-direction: column; align-items: stretch; }
+      .add-project-btn { justify-content: center; }
+    }
+    @media (max-width: 480px) {
+      .credentials { grid-template-columns: 1fr; }
+      .hero-ctas { flex-direction: column; align-items: stretch; }
+      .float-whats { width: 54px; height: 54px; bottom: 18px; right: 18px; }
+    }
+
+    /* Acessibilidade: respeitar preferência de movimento reduzido */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================================================================
+       SVG SPRITE — hexágonos reutilizáveis (estilo do Manual da Marca)
+       =================================================================== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- hexágono outline -->
+      <symbol id="hex-outline" viewBox="0 0 100 100">
+        <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      </symbol>
+      <!-- hexágono preenchido -->
+      <symbol id="hex-filled" viewBox="0 0 100 100">
+        <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="currentColor"/>
+      </symbol>
+      <!-- padrão de favo (3 hexágonos) -->
+      <symbol id="hex-cluster" viewBox="0 0 200 200">
+        <polygon points="50,15 85,35 85,75 50,95 15,75 15,35" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <polygon points="130,15 165,35 165,75 130,95 95,75 95,35" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <polygon points="90,90 125,110 125,150 90,170 55,150 55,110" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- ===================================================================
+       NAVBAR — fixa com scroll spy e hamburger mobile
+       =================================================================== -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a href="#hero" class="brand" aria-label="DataV — Início">
+        <svg class="brand-icon" viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="10" y="40" width="8" height="14" fill="#00D0C6"/>
+          <rect x="22" y="30" width="8" height="24" fill="#00D0C6"/>
+          <rect x="34" y="20" width="8" height="34" fill="#00D0C6"/>
+          <rect x="46" y="10" width="8" height="44" fill="#00D0C6"/>
+        </svg>
+        Data<span class="v-accent">V</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links" id="navLinks">
+          <li><a href="#hero">Início</a></li>
+          <li><a href="#sobre">Sobre</a></li>
+          <li><a href="#servicos">Serviços</a></li>
+          <li><a href="#processo">Como funciona</a></li>
+          <li><a href="#portfolio">Portfólio</a></li>
+          <li><a href="#depoimentos">Depoimentos</a></li>
+          <li><a href="#contato">Contato</a></li>
+        </ul>
+      </nav>
+
+      <a href="https://wa.me/5511973590712" target="_blank" rel="noopener" class="nav-cta">Fale Conosco</a>
+
+      <button class="hamburger" id="hamburger" aria-label="Abrir menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================================================================
+       HERO — tagline principal, CTA WhatsApp e hexágonos animados
+       =================================================================== -->
+  <section class="hero" id="hero">
+    <!-- hexágonos decorativos animados -->
+    <div class="hex-bg hero-hex-1 hex-float" style="color:#00D0C6">
+      <svg><use href="#hex-cluster"/></svg>
+    </div>
+    <div class="hex-bg hero-hex-2 hex-float delay-2" style="color:#00D0C6">
+      <svg><use href="#hex-cluster"/></svg>
+    </div>
+    <div class="hex-bg hero-hex-3 hex-float delay-1" style="color:#00D0C6">
+      <svg><use href="#hex-outline"/></svg>
+    </div>
+    <div class="hex-bg hero-hex-4 hex-float" style="color:#00D0C6">
+      <svg><use href="#hex-filled"/></svg>
+    </div>
+
+    <div class="container hero-inner">
+      <h1 class="reveal delay-1">
+        Une <span class="accent">Finanças</span> e <span class="accent">Tecnologia</span><br>
+        para Análises Inteligentes
+      </h1>
+      <p class="subtitle reveal delay-2">
+        Transformamos dados em decisões inteligentes — soluções acessíveis,
+        robustas e estratégicas em análise de dados, inteligência artificial e automação.
+      </p>
+      <div class="hero-ctas reveal delay-3">
+        <a href="https://wa.me/5511973590712" target="_blank" rel="noopener" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"/>
+          </svg>
+          Fale Conosco no WhatsApp
+        </a>
+        <a href="#servicos" class="btn btn-outline">Conheça os serviços</a>
+      </div>
+    </div>
+
+    <div class="scroll-indicator">↓ ROLE PARA EXPLORAR</div>
+  </section>
+
+  <!-- ===================================================================
+       SOBRE / CREDENCIAIS
+       =================================================================== -->
+  <section class="about" id="sobre">
+    <div class="container">
+      <div class="about-grid">
+        <!-- Coluna texto -->
+        <div class="about-text">
+          <span class="eyebrow reveal" style="color:#00D0C6;font-weight:600;font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;display:inline-block;margin-bottom:.75rem;">Sobre a DataV</span>
+          <h2 class="reveal">Mais de 10 anos conectando <span style="color:#00D0C6">Tecnologia</span>, Dados e Negócios</h2>
+          <p class="lead reveal delay-1">
+            Conectamos negócios à inteligência estratégica por meio de dados —
+            ajudando empresas a transformar informação em vantagem competitiva.
+          </p>
+          <p class="reveal delay-2">
+            Com mais de uma década de experiência consolidada nas áreas financeira,
+            contábil e de tecnologia, a DataV é especialista em transformar dados
+            em insights estratégicos. Atuamos com inteligência artificial,
+            engenharia de dados e análise em Power BI, apoiando empresas a
+            otimizarem processos e a tomarem decisões mais assertivas.
+          </p>
+          <p class="reveal delay-2">
+            Nossa equipe possui certificação Microsoft em inteligência artificial.
+            Somando isso ao domínio de ferramentas de automação como N8N, Logic Apps
+            e Power Automate, e ferramentas de análise de dados como Power BI e Excel,
+            nos tornamos aptos para otimizar processos trazendo insights e evolução
+            para o seu negócio.
+          </p>
+        </div>
+
+        <!-- Coluna cards de credenciais -->
+        <div class="credentials">
+          <!-- Card com mapa do Brasil destacando os 8 estados atendidos -->
+          <div class="cred-card map-card reveal delay-1" style="grid-column: 1 / -1;">
+            <div class="map-wrap">
+              <div class="map-svg-wrap" style="position:relative;">
+                <div id="map-container">
+                  <div class="map-loading">Carregando mapa...</div>
+                </div>
+                <div class="map-tooltip" id="mapTooltip"></div>
+              </div>
+
+              <div class="map-legend">
+                <div class="map-count">Nossa <span class="accent">Presença</span></div>
+                <div class="map-sub">Clientes em diversos estados brasileiros</div>
+                <ul class="state-list">
+                  <li>São Paulo</li>
+                  <li>Rio de Janeiro</li>
+                  <li>Minas Gerais</li>
+                  <li>Mato Grosso do Sul</li>
+                  <li>Bahia</li>
+                  <li>Rio Grande do Sul</li>
+                  <li>Ceará</li>
+                  <li>Paraná</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linha do tempo da carreira -->
+      <div class="timeline-wrap reveal">
+        <div class="timeline-title">Trajetória · A experiência que sustenta a DataV</div>
+        <div class="timeline">
+          <div class="tl-item"><div class="tl-year">2011</div><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div class="tl-area">Logística</div></div>
+          <div class="tl-item"><div class="tl-year">2012</div><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div class="tl-area">Financeiro</div></div>
+          <div class="tl-item"><div class="tl-year">2014</div><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div class="tl-area">Contabilidade</div></div>
+          <div class="tl-item"><div class="tl-year">2016</div><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div class="tl-area">Financeiro</div></div>
+          <div class="tl-item"><div class="tl-year">2019</div><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div class="tl-area">Controladoria</div></div>
+          <div class="tl-item"><div class="tl-year">2020</div><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div class="tl-area">RH / Dados</div></div>
+          <div class="tl-item"><div class="tl-year">Hoje</div><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div class="tl-area">Dados &amp; IA</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SERVIÇOS — cards com ícone, descrição e CTA
+       =================================================================== -->
+  <section class="services" id="servicos">
+    <div class="container">
+      <div class="section-title reveal">
+        <h2>Serviços e Especialidades</h2>
+        <p>Soluções end-to-end para extrair o máximo valor dos seus dados, com tecnologia de ponta e foco em resultados.</p>
+      </div>
+
+      <div class="services-grid">
+        <!-- 1. Automações -->
+        <article class="service-card reveal">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>Automações</h3>
+          <p>Oferecemos um portfólio diversificado de automações para o seu negócio. Unimos a experiência de quem vivenciou por anos áreas de negócio ao domínio das ferramentas necessárias para simplificar processos.</p>
+          <a href="#contato" class="service-btn" data-service="Automações">Solicitar este serviço →</a>
+        </article>
+
+        <!-- 2. Inteligência Artificial -->
+        <article class="service-card reveal delay-1">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.2 4.2l4.3 4.3m7 7l4.3 4.3M1 12h6m10 0h6M4.2 19.8l4.3-4.3m7-7l4.3-4.3"/></svg>
+          </div>
+          <h3>Inteligência Artificial</h3>
+          <p>Consultoria especializada para identificar onde e como a IA deve ser implementada na sua empresa, ajudando a melhorar processos, otimizar tempo e auxiliar na geração de receita.</p>
+          <a href="#contato" class="service-btn" data-service="Inteligência Artificial">Solicitar este serviço →</a>
+        </article>
+
+        <!-- 3. Dashboards e Relatórios -->
+        <article class="service-card reveal delay-2">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="13" width="3" height="5"/><rect x="12" y="9" width="3" height="9"/><rect x="17" y="5" width="3" height="13"/></svg>
+          </div>
+          <h3>Dashboards e Relatórios</h3>
+          <p>Painéis interativos que traduzem dados complexos em decisões claras. Tenha visão real do seu negócio para saber exatamente onde precisa chegar.</p>
+          <a href="#contato" class="service-btn" data-service="Dashboards e Relatórios">Solicitar este serviço →</a>
+        </article>
+
+        <!-- 4. Atendimento Online com IA -->
+        <article class="service-card reveal">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>Atendimento Online com IA</h3>
+          <p>Chatbots inteligentes com qualificação automática de leads e atendimento 24/7. Seu cliente atendido a qualquer momento, de forma natural, com informações precisas e um padrão totalmente gerenciável.</p>
+          <a href="#contato" class="service-btn" data-service="Atendimento Online com IA">Solicitar este serviço →</a>
+        </article>
+
+        <!-- 5. Data Lake & Governança -->
+        <article class="service-card reveal delay-1">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4 3 9 3s9-1.34 9-3v-6"/></svg>
+          </div>
+          <h3>Data Lake &amp; Governança</h3>
+          <p>Estruturação de Data Lake, políticas de governança e qualidade — para que seus dados sejam confiáveis, rastreáveis e seguros, abrindo novas oportunidades para o seu negócio.</p>
+          <a href="#contato" class="service-btn" data-service="Data Lake & Governança">Solicitar este serviço →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       COMO FUNCIONA — 4 etapas do processo
+       =================================================================== -->
+  <section class="process" id="processo">
+    <div class="container">
+      <div class="section-title reveal">
+        <span class="eyebrow">Como funciona</span>
+        <h2>Um processo claro, do diagnóstico à entrega</h2>
+        <p>Trabalho com transparência em cada etapa — você sempre sabe onde estamos e o que vem a seguir.</p>
+      </div>
+
+      <div class="process-grid">
+        <div class="step-card reveal">
+          <div class="step-num">01</div>
+          <h3>Diagnóstico</h3>
+          <p>Conversa estratégica para entender suas dores, contexto operacional e objetivos de negócio.</p>
+        </div>
+        <div class="step-card reveal delay-1">
+          <div class="step-num">02</div>
+          <h3>Proposta Personalizada</h3>
+          <p>Solução desenhada sob medida — escopo, prazo, ferramentas e entregáveis claros.</p>
+        </div>
+        <div class="step-card reveal delay-2">
+          <div class="step-num">03</div>
+          <h3>Execução</h3>
+          <p>Desenvolvimento com checkpoints periódicos, transparência total e agilidade na implementação.</p>
+        </div>
+        <div class="step-card reveal delay-3">
+          <div class="step-num">04</div>
+          <h3>Entrega &amp; Suporte</h3>
+          <p>Resultado validado junto com você — com treinamento, documentação e suporte pós-entrega.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       PORTFÓLIO — grid filtrável + modal de upload (localStorage)
+       =================================================================== -->
+  <section class="portfolio" id="portfolio">
+    <div class="container">
+      <div class="section-title reveal">
+        <span class="eyebrow">Projetos</span>
+        <h2>Portfólio de soluções entregues</h2>
+        <p>Casos reais — adicione novos projetos diretamente pelo painel abaixo.</p>
+      </div>
+
+      <div class="portfolio-controls reveal">
+        <div class="filters" id="filters">
+          <button class="filter-btn active" data-filter="all">Todos</button>
+          <button class="filter-btn" data-filter="Automações">Automações</button>
+          <button class="filter-btn" data-filter="IA">IA</button>
+          <button class="filter-btn" data-filter="Dashboards">Dashboards</button>
+          <button class="filter-btn" data-filter="Atendimento IA">Atendimento IA</button>
+          <button class="filter-btn" data-filter="Data Lake">Data Lake</button>
+        </div>
+        <button class="add-project-btn" id="openModal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar projeto
+        </button>
+      </div>
+
+      <div class="portfolio-grid" id="portfolioGrid">
+        <!-- Cards default + cards do localStorage são injetados via JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal de adicionar projeto -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <button class="modal-close" id="closeModal" aria-label="Fechar">×</button>
+      <h3 id="modalTitle">Adicionar projeto ao portfólio</h3>
+      <form id="projectForm">
+        <div class="form-group">
+          <label for="p-title">Título do projeto *</label>
+          <input type="text" id="p-title" name="title" required maxlength="80">
+        </div>
+        <div class="form-group">
+          <label for="p-category">Categoria *</label>
+          <select id="p-category" name="category" required>
+            <option value="Automações">Automações</option>
+            <option value="IA">IA</option>
+            <option value="Dashboards">Dashboards</option>
+            <option value="Atendimento IA">Atendimento IA</option>
+            <option value="Data Lake">Data Lake</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="p-desc">Descrição *</label>
+          <textarea id="p-desc" name="description" required maxlength="280"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="p-image">Imagem (opcional)</label>
+          <input type="file" id="p-image" accept="image/*">
+          <div class="file-preview" id="filePreview"><img id="previewImg" alt=""></div>
+        </div>
+        <div class="form-group">
+          <label for="p-video">URL de vídeo (YouTube/Vimeo · opcional)</label>
+          <input type="url" id="p-video" name="video" placeholder="https://...">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" id="cancelModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar projeto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       DEPOIMENTOS
+       =================================================================== -->
+  <section class="testimonials" id="depoimentos">
+    <div class="container">
+      <div class="section-title reveal">
+        <span class="eyebrow">Quem já contratou</span>
+        <h2>Confiança construída por resultados</h2>
+        <p>Avaliações reais de clientes em diferentes estados brasileiros.</p>
+      </div>
+
+      <div class="testimonials-grid">
+        <article class="test-card reveal">
+          <div class="stars">★★★★★</div>
+          <p class="test-text">"Equipe com habilidades diferenciadas, entregaram mais do que o esperado, sempre atendendo as demandas de forma rápida. Não se limitaram e buscaram mais conhecimento no cálculo específico demandado. Sobre o dashboard, ficou excelente, layout muito bonito, dinâmico e preciso! Sucesso!"</p>
+          <div class="test-author">
+            <div class="test-avatar">D</div>
+            <div><div class="name">Daniel Jorge</div><div class="role">Gestão de Investimentos</div></div>
+          </div>
+        </article>
+
+        <article class="test-card reveal delay-1">
+          <div class="stars">★★★★★</div>
+          <p class="test-text">"A DataV foi muito ágil na comunicação e compreensão do projeto, apresentou um material de alta qualidade, me ajudou com dúvidas, mostrou-se muito gentil além de especialista no assunto, realmente dominam o que fazem. Quero expressar meu agradecimento pela ajuda, super recomendo o trabalho da equipe, com certeza voltarei a contratar seus serviços."</p>
+          <div class="test-author">
+            <div class="test-avatar">M</div>
+            <div><div class="name">Maiara Xavier Sales</div><div class="role">Análise de Negócios</div></div>
+          </div>
+        </article>
+
+        <article class="test-card reveal delay-2">
+          <div class="stars">★★★★★</div>
+          <p class="test-text">"Correu tudo bem com o trabalho apresentado pela DataV. Demonstraram competência com uma comunicação descomplicada e atenção às nossas dúvidas e questionamentos. Recomendo!"</p>
+          <div class="test-author">
+            <div class="test-avatar">M</div>
+            <div><div class="name">Márcio Roberto Reich</div><div class="role">Cliente</div></div>
+          </div>
+        </article>
+
+        <article class="test-card reveal">
+          <div class="stars">★★★★★</div>
+          <p class="test-text">"Trabalhar com a DataV é muito tranquilo. Comunicação rápida, fácil e direta. Têm bastante experiência com Power BI, então realmente conseguem entregar dentro do prazo pedido. Recomendo sem pensar duas vezes, pode contratar que não tem erro."</p>
+          <div class="test-author">
+            <div class="test-avatar">G</div>
+            <div><div class="name">Gustavo</div><div class="role">Cliente</div></div>
+          </div>
+        </article>
+
+        <article class="test-card reveal delay-1">
+          <div class="stars">★★★★★</div>
+          <p class="test-text">"Requisitos Atendidos: 11/10. Atenderam todos os pedidos e ainda sugeriram uma visão diferente que atende a necessidade perfeitamente. Comunicação: 10/10. Respondem super rápido, comunicação direta e simples. Qualidade do Dash: 10/10. Muito bem feito e super bem organizado os modelos de dados por trás. Design 10/10: Dash ficou claro, bonito e elegante. Com certeza vou trabalhar com a DataV em futuros projetos. Pode contratar que não tem erro."</p>
+          <div class="test-author">
+            <div class="test-avatar">G</div>
+            <div><div class="name">Gustavo</div><div class="role">Cliente</div></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       VALORES — fundo escuro com hexágonos
+       =================================================================== -->
+  <section class="values" id="valores">
+    <div class="hex-bg values-hex-bg-1 hex-float" style="color:#00D0C6">
+      <svg><use href="#hex-cluster"/></svg>
+    </div>
+    <div class="hex-bg values-hex-bg-2 hex-float delay-2" style="color:#00D0C6">
+      <svg><use href="#hex-cluster"/></svg>
+    </div>
+
+    <div class="container">
+      <div class="section-title reveal">
+        <span class="eyebrow">No que acredito</span>
+        <h2>Valores que guiam o trabalho</h2>
+        <p>Princípios que fazem cada projeto entregue ser uma parceria verdadeira.</p>
+      </div>
+
+      <div class="values-grid">
+        <div class="value-card reveal">
+          <svg class="value-hex" viewBox="0 0 100 100" aria-hidden="true">
+            <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M35 50 L45 60 L65 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h3>Excelência Técnica</h3>
+          <p>Soluções com qualidade, precisão e foco nos resultados do cliente.</p>
+        </div>
+        <div class="value-card reveal delay-1">
+          <svg class="value-hex" viewBox="0 0 100 100" aria-hidden="true">
+            <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="none" stroke="currentColor" stroke-width="2"/>
+            <circle cx="50" cy="50" r="14" fill="none" stroke="currentColor" stroke-width="2.5"/>
+            <circle cx="50" cy="50" r="4" fill="currentColor"/>
+          </svg>
+          <h3>Transparência</h3>
+          <p>Clareza em todas as etapas — da proposta inicial à entrega final.</p>
+        </div>
+        <div class="value-card reveal delay-2">
+          <svg class="value-hex" viewBox="0 0 100 100" aria-hidden="true">
+            <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M50 28 L50 50 L62 58" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="22" fill="none" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <h3>Inovação Responsável</h3>
+          <p>O melhor da IA e automação com segurança, ética e respeito aos dados.</p>
+        </div>
+        <div class="value-card reveal delay-3">
+          <svg class="value-hex" viewBox="0 0 100 100" aria-hidden="true">
+            <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M50 65 L35 50 C28 43 35 32 45 38 C48 40 50 42 50 45 C50 42 52 40 55 38 C65 32 72 43 65 50 Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+          <h3>Empatia &amp; Proximidade</h3>
+          <p>Ouvir o cliente, entender suas dores e atuar como parceiro estratégico.</p>
+        </div>
+        <div class="value-card reveal delay-4">
+          <svg class="value-hex" viewBox="0 0 100 100" aria-hidden="true">
+            <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M30 42 L50 32 L70 42 L50 52 Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M38 48 L38 62 C38 66 42 70 50 70 C58 70 62 66 62 62 L62 48" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          </svg>
+          <h3>Educação &amp; Capacitação</h3>
+          <p>Treinamentos em Power BI e Excel para empoderar profissionais e equipes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       CONTATO / CTA FINAL — WhatsApp + formulário + redes sociais
+       =================================================================== -->
+  <section class="contact" id="contato">
+    <div class="hex-bg contact-hex-1 hex-float" style="color:#00D0C6">
+      <svg><use href="#hex-cluster"/></svg>
+    </div>
+    <div class="hex-bg contact-hex-2 hex-float delay-1" style="color:#00D0C6">
+      <svg><use href="#hex-outline"/></svg>
+    </div>
+
+    <div class="container contact-inner">
+      <span class="eyebrow reveal" style="color:#00D0C6;font-weight:600;font-size:.85rem;letter-spacing:.25em;text-transform:uppercase;display:inline-block;margin-bottom:1rem;">Vamos conversar</span>
+      <h2 class="reveal">Pronto para transformar seus <span class="accent">dados</span> em<br><span class="accent">decisões inteligentes</span>?</h2>
+      <p class="lead reveal delay-1">
+        Conte-nos sobre seu projeto — retornaremos com uma proposta personalizada
+        em até 24 horas úteis.
+      </p>
+
+      <a href="https://wa.me/5511973590712" target="_blank" rel="noopener" class="whats-big reveal delay-2">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"/>
+        </svg>
+        Falar agora no WhatsApp
+      </a>
+
+      <!-- Formulário de captura de lead — integração n8n webhook -->
+      <form class="contact-form reveal delay-2" id="leadForm" action="https://ratsbone.app.n8n.cloud/webhook/datav-lead" method="POST" novalidate>
+        <h3>Ou envie sua mensagem aqui</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="lead-name">Nome *</label>
+            <input type="text" id="lead-name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="lead-email">E-mail *</label>
+            <input type="email" id="lead-email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="lead-phone">WhatsApp *</label>
+            <input type="tel" id="lead-phone" name="phone" required placeholder="(00) 00000-0000">
+          </div>
+          <div class="form-group">
+            <label for="lead-service">Serviço de interesse</label>
+            <select id="lead-service" name="service">
+              <option>Automações</option>
+              <option>Inteligência Artificial</option>
+              <option>Dashboards e Relatórios</option>
+              <option>Atendimento Online com IA</option>
+              <option>Data Lake &amp; Governança</option>
+              <option>Outro / Não sei ainda</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label for="lead-message">Mensagem *</label>
+            <textarea id="lead-message" name="message" required placeholder="Conte um pouco sobre seu desafio..."></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Enviar mensagem →</button>
+      </form>
+      <div class="form-success" id="formSuccess">
+        ✓ Mensagem enviada com sucesso. Retorno em até 24h úteis.
+      </div>
+
+      <!-- Redes sociais -->
+      <div class="social-links reveal delay-3">
+        <a href="https://www.instagram.com/datav.bi/" aria-label="Instagram" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37a4 4 0 1 1-7.92 1.25 4 4 0 0 1 7.92-1.25z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        </a>
+        <a href="mailto:contato@datav.tec.br" aria-label="E-mail">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       FOOTER
+       =================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand">
+            <svg class="brand-icon" viewBox="0 0 64 64" aria-hidden="true">
+              <rect x="10" y="40" width="8" height="14" fill="#00D0C6"/>
+              <rect x="22" y="30" width="8" height="24" fill="#00D0C6"/>
+              <rect x="34" y="20" width="8" height="34" fill="#00D0C6"/>
+              <rect x="46" y="10" width="8" height="44" fill="#00D0C6"/>
+            </svg>
+            Data<span class="v-accent">V</span>
+          </div>
+          <p>Une finanças e tecnologia para análises inteligentes — transformando dados em decisões estratégicas para o seu negócio.</p>
+        </div>
+
+        <div>
+          <h4>Navegação</h4>
+          <ul>
+            <li><a href="#sobre">Sobre</a></li>
+            <li><a href="#servicos">Serviços</a></li>
+            <li><a href="#processo">Como funciona</a></li>
+            <li><a href="#portfolio">Portfólio</a></li>
+            <li><a href="#depoimentos">Depoimentos</a></li>
+            <li><a href="#contato">Contato</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Serviços</h4>
+          <ul>
+            <li><a href="#servicos">Automações</a></li>
+            <li><a href="#servicos">Inteligência Artificial</a></li>
+            <li><a href="#servicos">Dashboards e Relatórios</a></li>
+            <li><a href="#servicos">Atendimento com IA</a></li>
+            <li><a href="#servicos">Data Lake &amp; Governança</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        © 2026 DataV Tecnologia · Todos os direitos reservados.
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================================================================
+       TELA DE LOGIN ADMIN
+       =================================================================== -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="10" y="40" width="8" height="14" fill="#00D0C6"/>
+          <rect x="22" y="30" width="8" height="24" fill="#00D0C6"/>
+          <rect x="34" y="20" width="8" height="34" fill="#00D0C6"/>
+          <rect x="46" y="10" width="8" height="44" fill="#00D0C6"/>
+        </svg>
+        Data<span class="v-accent">V</span>
+      </div>
+      <h3>Painel Administrativo</h3>
+      <p class="login-sub">Insira a senha para acessar o modo admin.</p>
+      <form id="loginForm" autocomplete="off">
+        <div class="form-group">
+          <label for="adminPass">Senha</label>
+          <input type="password" id="adminPass" placeholder="Digite a senha" required />
+          <p class="login-error" id="loginError">Senha incorreta. Tente novamente.</p>
+        </div>
+        <button type="submit" class="login-btn">Entrar</button>
+      </form>
+      <a href="index.html" class="login-back">← Voltar ao site</a>
+    </div>
+  </div>
+
+  <!-- Botão flutuante WhatsApp (canto inferior direito) -->
+  <a href="https://wa.me/5511973590712" target="_blank" rel="noopener" class="float-whats" aria-label="Falar no WhatsApp">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"/>
+    </svg>
+  </a>
+
+  <!-- ===================================================================
+       JAVASCRIPT — Navbar / scroll spy / hamburger / animações
+                    portfólio (localStorage + FileReader) / formulários
+       =================================================================== -->
+  <script>
+  (function () {
+    'use strict';
+
+    /* ---------------------------------------------------------------
+       1. NAVBAR — scroll state, hamburger toggle, smooth scroll, scroll spy
+       --------------------------------------------------------------- */
+    const navbar    = document.getElementById('navbar');
+    const navLinks  = document.getElementById('navLinks');
+    const hamburger = document.getElementById('hamburger');
+    const allAnchorLinks = document.querySelectorAll('a[href^="#"]'); // todos os links âncora (nav + CTAs)
+    const navAnchors = navLinks.querySelectorAll('a');
+
+    // scroll → adiciona classe .scrolled na navbar
+    const onScroll = () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 30);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // helpers para o menu mobile
+    const closeMobileMenu = () => {
+      navLinks.classList.remove('open');
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('nav-open');
+    };
+    const toggleMobileMenu = () => {
+      const isOpen = navLinks.classList.toggle('open');
+      hamburger.classList.toggle('open', isOpen);
+      hamburger.setAttribute('aria-expanded', String(isOpen));
+      document.body.classList.toggle('nav-open', isOpen);
+    };
+    hamburger.addEventListener('click', toggleMobileMenu);
+    // ESC fecha menu mobile
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navLinks.classList.contains('open')) closeMobileMenu();
+    });
+
+    // SMOOTH SCROLL programático — calcula offset exato da navbar fixa
+    // (mais confiável que apenas CSS scroll-padding em alguns browsers)
+    const scrollToSection = (hash) => {
+      if (!hash || hash === '#') return;
+      const target = document.querySelector(hash);
+      if (!target) return;
+      const navH = navbar.offsetHeight || 72;
+      const top = target.getBoundingClientRect().top + window.pageYOffset - navH + 1;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    };
+
+    allAnchorLinks.forEach(a => {
+      a.addEventListener('click', (e) => {
+        const href = a.getAttribute('href');
+        if (!href || href === '#') return;
+        const target = document.querySelector(href);
+        if (!target) return;
+        e.preventDefault();
+        // fecha menu mobile primeiro (sem esperar para não bloquear o scroll)
+        if (navLinks.classList.contains('open')) closeMobileMenu();
+        // atualiza URL sem reload, mantendo histórico
+        history.pushState(null, '', href);
+        scrollToSection(href);
+      });
+    });
+
+    // suporta voltar/avançar do navegador
+    window.addEventListener('popstate', () => scrollToSection(location.hash));
+    // se a página carregar com hash, ajusta o scroll após render
+    if (location.hash) {
+      window.addEventListener('load', () => setTimeout(() => scrollToSection(location.hash), 50));
+    }
+
+    // SCROLL SPY → destaca link da seção visível
+    const sections = document.querySelectorAll('section[id]');
+    const spyObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const id = e.target.id;
+          navAnchors.forEach(a => {
+            const isActive = a.getAttribute('href') === '#' + id;
+            a.classList.toggle('active', isActive);
+            if (isActive) a.setAttribute('aria-current', 'true');
+            else a.removeAttribute('aria-current');
+          });
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    sections.forEach(s => spyObserver.observe(s));
+
+    /* ---------------------------------------------------------------
+       2. REVEAL — animação de entrada (Intersection Observer)
+       --------------------------------------------------------------- */
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in-view');
+          revealObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    /* ---------------------------------------------------------------
+       3. MODO ADMIN — login com senha hash (SHA-256)
+       --------------------------------------------------------------- */
+    // Hash SHA-256 da senha "DataV@2026" — altere o hash para trocar a senha
+    const ADMIN_HASH = '4b4857d28f0c47a6f298b30f86f97fd894163824f163cfab6c76e5ff0e556991';
+
+    async function sha256(text) {
+      const data = new TextEncoder().encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    const loginOverlay = document.getElementById('loginOverlay');
+    const loginForm    = document.getElementById('loginForm');
+    const loginError   = document.getElementById('loginError');
+    const adminPass    = document.getElementById('adminPass');
+
+    // Verifica se tem ?admin=1 na URL → mostra tela de login
+    const wantsAdmin = new URLSearchParams(window.location.search).get('admin') === '1';
+    // Verifica se já autenticou nesta sessão
+    const isAuthenticated = sessionStorage.getItem('datav_admin') === '1';
+
+    if (wantsAdmin && !isAuthenticated) {
+      loginOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => adminPass.focus(), 300);
+    }
+    if (isAuthenticated && wantsAdmin) {
+      document.body.classList.add('admin-mode');
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const hash = await sha256(adminPass.value);
+      if (hash === ADMIN_HASH) {
+        sessionStorage.setItem('datav_admin', '1');
+        document.body.classList.add('admin-mode');
+        loginOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+        loginError.classList.remove('show');
+      } else {
+        loginError.classList.add('show');
+        adminPass.value = '';
+        adminPass.focus();
+      }
+    });
+
+    /* ---------------------------------------------------------------
+       4. PORTFÓLIO — CRUD via localStorage + filtros + FileReader
+       --------------------------------------------------------------- */
+    const STORAGE_KEY = 'datav_portfolio_v1';
+    const grid      = document.getElementById('portfolioGrid');
+    const filtersEl = document.getElementById('filters');
+
+    // Projetos default (sempre visíveis, não-removíveis)
+    const defaultProjects = [
+      {
+        id: 'd1', user: false, category: 'Dashboards',
+        title: 'Dashboard Financeiro Multi-Empresa',
+        description: 'Consolidação de DRE, fluxo de caixa e indicadores de 5 unidades de negócio com drill-down dinâmico.',
+        image: null, video: null
+      },
+      {
+        id: 'd2', user: false, category: 'IA',
+        title: 'Classificador de NFs com Azure ML',
+        description: 'Modelo de IA para categorização automática de notas fiscais, com integração ao ERP via Logic App.',
+        image: null, video: null
+      },
+      {
+        id: 'd3', user: false, category: 'Automações',
+        title: 'Automação de Conciliação Bancária',
+        description: 'Extração de extratos, match com lançamentos contábeis e relatório diário — tudo automatizado.',
+        image: null, video: null
+      },
+      {
+        id: 'd4', user: false, category: 'Atendimento IA',
+        title: 'Chatbot de Atendimento 24/7',
+        description: 'Assistente virtual integrado ao WhatsApp com qualificação automática de leads e respostas contextuais.',
+        image: null, video: null
+      },
+      {
+        id: 'd5', user: false, category: 'Data Lake',
+        title: 'Data Lake Corporativo',
+        description: 'Estruturação de Data Lake com governança, catalogação e pipelines de ingestão automatizados.',
+        image: null, video: null
+      },
+      {
+        id: 'd6', user: false, category: 'Dashboards',
+        title: 'BI Comercial com Indicadores de Vendas',
+        description: 'Visão 360° de vendas: pipeline, conversão, ticket médio e ranking por vendedor.',
+        image: null, video: null
+      }
+    ];
+
+    const loadUserProjects = () => {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+      catch (e) { return []; }
+    };
+    const saveUserProjects = (list) => localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+
+    // converte URL de vídeo (YouTube/Vimeo) em embed
+    const toEmbed = (url) => {
+      if (!url) return null;
+      // YouTube
+      const yt = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([\w-]{11})/);
+      if (yt) return 'https://www.youtube.com/embed/' + yt[1];
+      // Vimeo
+      const vi = url.match(/vimeo\.com\/(\d+)/);
+      if (vi) return 'https://player.vimeo.com/video/' + vi[1];
+      return url;
+    };
+
+    // gera o card HTML de um projeto
+    const renderCard = (p) => {
+      const thumb = p.image
+        ? `<img src="${p.image}" alt="${p.title}" loading="lazy">`
+        : `<svg class="placeholder-icon" width="64" height="64" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
+             <polygon points="50,5 93,28 93,72 50,95 7,72 7,28"/>
+             <rect x="35" y="55" width="6" height="14" fill="currentColor"/>
+             <rect x="46" y="45" width="6" height="24" fill="currentColor"/>
+             <rect x="57" y="35" width="6" height="34" fill="currentColor"/>
+           </svg>`;
+      const action = p.video
+        ? `<a href="${toEmbed(p.video)}" target="_blank" rel="noopener" class="project-link">Ver mais</a>`
+        : `<a href="#contato" class="project-link">Ver mais</a>`;
+      return `
+        <article class="project-card" data-category="${p.category}" data-user="${p.user}" data-id="${p.id}">
+          <div class="project-thumb">
+            ${thumb}
+            <span class="project-tag">${p.category}</span>
+          </div>
+          <div class="project-body">
+            <h3>${p.title}</h3>
+            <p>${p.description}</p>
+            <div class="project-actions">
+              ${action}
+              <button class="project-delete" aria-label="Remover projeto" title="Remover">🗑</button>
+            </div>
+          </div>
+        </article>`;
+    };
+
+    // renderiza todos os cards
+    const render = () => {
+      const userProjects = loadUserProjects();
+      const all = [...defaultProjects, ...userProjects];
+      grid.innerHTML = all.map(renderCard).join('');
+      applyFilter(currentFilter);
+
+      // attach delete handlers (apenas user)
+      grid.querySelectorAll('.project-card[data-user="true"] .project-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.closest('.project-card').dataset.id;
+          if (confirm('Remover este projeto do portfólio?')) {
+            saveUserProjects(loadUserProjects().filter(p => p.id !== id));
+            render();
+          }
+        });
+      });
+    };
+
+    // filtros
+    let currentFilter = 'all';
+    const applyFilter = (cat) => {
+      grid.querySelectorAll('.project-card').forEach(c => {
+        c.style.display = (cat === 'all' || c.dataset.category === cat) ? '' : 'none';
+      });
+    };
+    filtersEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      filtersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      applyFilter(currentFilter);
+    });
+
+    /* ---------------------------------------------------------------
+       4. MODAL — adicionar projeto (FileReader para preview/storage)
+       --------------------------------------------------------------- */
+    const modal       = document.getElementById('modalBackdrop');
+    const openBtn     = document.getElementById('openModal');
+    const closeBtn    = document.getElementById('closeModal');
+    const cancelBtn   = document.getElementById('cancelModal');
+    const form        = document.getElementById('projectForm');
+    const fileInput   = document.getElementById('p-image');
+    const previewBox  = document.getElementById('filePreview');
+    const previewImg  = document.getElementById('previewImg');
+
+    let currentImageData = null; // data URL gerado pelo FileReader
+
+    const openModal  = () => { modal.classList.add('open'); document.body.style.overflow = 'hidden'; };
+    const closeModal = () => {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+      form.reset();
+      previewBox.classList.remove('show');
+      currentImageData = null;
+    };
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+    // preview com FileReader
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) { previewBox.classList.remove('show'); currentImageData = null; return; }
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Imagem muito grande. Use um arquivo de até 2MB.');
+        fileInput.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        currentImageData = ev.target.result;
+        previewImg.src = currentImageData;
+        previewBox.classList.add('show');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // submit do projeto
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const project = {
+        id: 'u' + Date.now(),
+        user: true,
+        title: document.getElementById('p-title').value.trim(),
+        category: document.getElementById('p-category').value,
+        description: document.getElementById('p-desc').value.trim(),
+        image: currentImageData,
+        video: document.getElementById('p-video').value.trim() || null
+      };
+      const list = loadUserProjects();
+      list.unshift(project);
+      saveUserProjects(list);
+      closeModal();
+      render();
+    });
+
+    // primeira renderização
+    render();
+
+    /* ---------------------------------------------------------------
+       5. SERVIÇOS — clique no card pré-preenche o select de contato
+       --------------------------------------------------------------- */
+    document.querySelectorAll('.service-btn[data-service]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const svc = btn.dataset.service;
+        const select = document.getElementById('lead-service');
+        if (!select) return;
+        Array.from(select.options).forEach(opt => {
+          if (opt.textContent.toLowerCase().includes(svc.toLowerCase().split('(')[0].trim().toLowerCase())) {
+            opt.selected = true;
+          }
+        });
+      });
+    });
+
+    /* ---------------------------------------------------------------
+       6. FORMULÁRIO DE LEAD — envio formspree (placeholder)
+       --------------------------------------------------------------- */
+    const leadForm = document.getElementById('leadForm');
+    const formSuccess = document.getElementById('formSuccess');
+
+    leadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = leadForm.querySelector('button[type="submit"]');
+      const original = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando...';
+
+      try {
+        const action = leadForm.getAttribute('action') || '';
+        const payload = {
+          name: document.getElementById('lead-name').value,
+          email: document.getElementById('lead-email').value,
+          phone: document.getElementById('lead-phone').value,
+          service: document.getElementById('lead-service').value,
+          message: document.getElementById('lead-message').value
+        };
+        const res = await fetch(action, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+        });
+        if (!res.ok) throw new Error('fail');
+        leadForm.style.display = 'none';
+        formSuccess.classList.add('show');
+      } catch (err) {
+        alert('Não foi possível enviar agora. Tente pelo WhatsApp.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = original;
+      }
+    });
+
+    /* ---------------------------------------------------------------
+       7. MAPA DO BRASIL — carrega SVG real da API do IBGE + tooltip
+       --------------------------------------------------------------- */
+    const mapContainer = document.getElementById('map-container');
+    const mapTooltip   = document.getElementById('mapTooltip');
+
+    // código IBGE → sigla UF
+    const ibgeToUf = {
+      '11':'RO','12':'AC','13':'AM','14':'RR','15':'PA','16':'AP','17':'TO',
+      '21':'MA','22':'PI','23':'CE','24':'RN','25':'PB','26':'PE','27':'AL','28':'SE','29':'BA',
+      '31':'MG','32':'ES','33':'RJ','35':'SP',
+      '41':'PR','42':'SC','43':'RS',
+      '50':'MS','51':'MT','52':'GO','53':'DF'
+    };
+
+    // nomes completos para o tooltip
+    const stateNames = {
+      'AC':'Acre','AL':'Alagoas','AP':'Amapá','AM':'Amazonas',
+      'BA':'Bahia','CE':'Ceará','DF':'Distrito Federal','ES':'Espírito Santo',
+      'GO':'Goiás','MA':'Maranhão','MT':'Mato Grosso','MS':'Mato Grosso do Sul',
+      'MG':'Minas Gerais','PA':'Pará','PB':'Paraíba','PR':'Paraná',
+      'PE':'Pernambuco','PI':'Piauí','RJ':'Rio de Janeiro',
+      'RN':'Rio Grande do Norte','RS':'Rio Grande do Sul',
+      'RO':'Rondônia','RR':'Roraima','SC':'Santa Catarina',
+      'SP':'São Paulo','SE':'Sergipe','TO':'Tocantins'
+    };
+
+    // estados clientes
+    const clientStates = new Set(['CE','BA','MG','MS','RJ','SP','PR','RS']);
+
+    if (mapContainer) {
+      // API oficial do IBGE — SVG com malha estadual
+      const mapUrl = 'https://servicodados.ibge.gov.br/api/v3/malhas/paises/BR?formato=image/svg+xml&qualidade=minima&intrarregiao=UF';
+      fetch(mapUrl)
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(svgData => {
+          mapContainer.innerHTML = svgData;
+          const svg = mapContainer.querySelector('svg');
+          if (!svg) return;
+
+          // torna responsivo
+          svg.removeAttribute('width');
+          svg.removeAttribute('height');
+          svg.setAttribute('role', 'img');
+          svg.setAttribute('aria-label', 'Mapa do Brasil com 8 estados atendidos pela DataV');
+
+          // converte IDs numéricos do IBGE para siglas UF (ex: "35" → "SP")
+          svg.querySelectorAll('path[id]').forEach(path => {
+            const code = path.getAttribute('id');
+            const uf = ibgeToUf[code];
+            if (uf) path.setAttribute('id', uf);
+          });
+
+          // tooltip follow-mouse
+          const wrapper = mapContainer.closest('.map-svg-wrap');
+          svg.querySelectorAll('path').forEach(path => {
+            path.addEventListener('mousemove', e => {
+              const id = path.getAttribute('id');
+              const name = stateNames[id];
+              if (!name) return;
+              mapTooltip.textContent = name;
+              mapTooltip.style.opacity = '1';
+              const rect = wrapper.getBoundingClientRect();
+              mapTooltip.style.left = (e.clientX - rect.left + 14) + 'px';
+              mapTooltip.style.top  = (e.clientY - rect.top - 28) + 'px';
+            });
+            path.addEventListener('mouseleave', () => {
+              mapTooltip.style.opacity = '0';
+            });
+          });
+        })
+        .catch(() => {
+          mapContainer.innerHTML = '<p style="color:#5a6a68;font-size:0.85rem;text-align:center;padding:2rem 0;">Não foi possível carregar o mapa. Recarregue a página.</p>';
+        });
+    }
+
+  })();
+  </script>
+</body>
+</html>
